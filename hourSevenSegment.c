@@ -24,8 +24,6 @@ int main(int argc, char *argv[])
 	// Sets variable powerPin to argument which contains GPIO pin that will suppy the 3.3V to 7-Segment display 
 	powerPin = atoi(argv[1]);
 	
-	// Initializes RaspberryPi Setup
-    	wiringPiSetup(); 
     	// Initializes RaspberryPi GPIO Pins
     	wiringPiSetupGpio(); 
 	// Sets GPIO pins as OUTPUT
