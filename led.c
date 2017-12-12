@@ -46,8 +46,6 @@ int main(int argc, char *argv[])
 		highOrLow = LOW;
 	}
 	
-	// Initializes RaspberryPi Setup
-    wiringPiSetup(); 
     // Initializes RaspberryPi GPIO Pins
     wiringPiSetupGpio(); 
     // Sets pin entered by user as OUTPUT
