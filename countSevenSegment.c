@@ -19,8 +19,7 @@ int main(int argc, char *argv[])
 	
 	powerPin = atoi(argv[1]);
 	
-	// Initializes RaspberryPi Setup
-    wiringPiSetup(); 
+
     // Initializes RaspberryPi GPIO Pins
     wiringPiSetupGpio(); 
     pinMode(powerPin, OUTPUT);
