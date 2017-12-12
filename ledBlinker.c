@@ -29,8 +29,6 @@ int main(int argc, char *argv[])
 	// Stores pin number entered by user into variable pinNumber
 	pinNumber = atoi(argv[1]);
 	
-	// Initializes RaspberryPi Setup
-	wiringPiSetup();
 	// Initializes RaspberryPi GPIO Pins
 	wiringPiSetupGpio();
 	// Sets pin entered by user as OUTPUT
