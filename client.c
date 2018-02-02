@@ -1,5 +1,4 @@
 // Library Declaration Section
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -17,12 +16,14 @@
 
 int main(int argc, char *argv[])
 {
-	int socket, numberOfBytes;
-	char buffer[MAXBYTES];
-	char ip_address[IPADDRESS];
-	struct addrinfo hints, *servinfo, *p;
-	int error = -1;
-	char sentMessage[INET6_ADDRSTRLEN];
+	int clientSocket // Used to store the socket()
+	int numberOfBytes;	
+	char buffer[MAXBYTES];	// Buffer
+	char serverIP_address[IPADDRESS];	// Will contain the Server's IP address
+	struct addrinfo clientInfo; // Will store the Host information
+	struct addrinfo *pClientInfo;	// Will point to Host information
+	int error = -1;	// Used as a error checking variable
+	char sentMessage[INET6_ADDRSTRLEN];	// Used to send messages to Server
 	
 	if (argc != 2)
 	{
@@ -35,19 +36,32 @@ int main(int argc, char *argv[])
 		strcpy(ip_address, argv[1]);
 	}
 
-	memset(&hints, 0, sizeof(hints));
-	hints.ai_family = AF_UNSPEC; // Type of IP can be either IPv4 or IPv6
-	hints.ai_socktype = SOCK_STREAM; // Type of socket is TCP
+	memset(&clientInfo, 0, sizeof(clientInfo)); // Empties garbage from structure
 
-	error = getaddrinfo(ip_address, PORTNUMBER, &hints, &servinfo);
+	clientInfo.ai_family = AF_UNSPEC; // IP can be either IPv4 or IPv6
+	clientInfo.ai_family = SOCK_STREAM // TCP connection
+	clientInfo.ai_flags = AI_PASSIVE; // Assigns Host IP address to socket structures
 
+	error = getaddrinfo(NULL, PORTNUMBER, &clientInfo, &pClientInfo); // pClientInfo points to clientInfo
 	if (error != 0)
 	{
-		printf("Error on function getaddrinfo(): %s\n", gai_strerror(error));
+		printf("Error from function getaddrinfo() %s\n", gai_strerror(error));
 		exit(1);
 	}
+	
+	clientSocket = socket(pClientInfo->ai_family, pClientInfo->ai_socktype, pClientInfo->ai_protocol);
+	if (clientSocket == -1)
+	{
+		printf("Error, socket failed\n");
+		exit(1);
+	}
+	
+
+
 
 	
+
+	free(pClientInfo); // Frees the Linked List
 
 }
 
