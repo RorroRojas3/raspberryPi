@@ -34,7 +34,8 @@ int main(int argc, char *argv[])
 	int error = -1;	// Used as a error checking variable
 	//int successSocket = -1;
 	//int successConnection = -1;
-	//char sentMessage[INET6_ADDRSTRLEN];	// Used to send messages to Server
+	char sentMessage[MAXBYTES];	// Used to send messages to Server
+	int sentBytes;
 	
 	char s[256];
 	
@@ -92,23 +93,36 @@ int main(int argc, char *argv[])
 	freeaddrinfo(pClientInfo);
 
 	// recv(socket of client, message storage, maximum size of storage, flag);
-	error = recv(clientSocket, buffer, MAXBYTES - 1, 0); // Receives message from Server 
-	if (error == -1)
+	
+	while(1)
 	{
-		printf("Error on recv() function\n");
-		close(clientSocket);
-		exit(1);
-	}
-	else if (error == 0)
-	{
-		printf("Error, Server has closed connection\n");
-		close(clientSocket);
-		exit(1);
-	}
-	else
-	{
-		buffer[MAXBYTES] = '\0';
-		printf("Server sent: '%s'\n", buffer);
+		error = recv(clientSocket, buffer, MAXBYTES - 1, 0); // Receives message from Server 
+		if (error == -1)
+		{
+			printf("Error on recv() function\n");
+			close(clientSocket);
+			exit(1);
+		}
+		else if (error == 0)
+		{
+			printf("Error, Server has closed connection\n");
+			close(clientSocket);
+			exit(1);
+		}
+		else
+		{
+			printf("Server sent: '%s'\n", buffer);
+			printf("Enter your message: ");
+			fgets(buffer, MAXBYTES, stdin);
+			sscanf(buffer, "%s", sentMessage);
+			sentBytes = send(clientSocket, sentMessage, MAXBYTES - 1, 0);		
+			if (sentBytes < 0)
+			{
+				printf("Error on the send() function");
+				close(clientSocket);
+				exit(1);
+			}
+		}
 	}
 
 		

@@ -37,6 +37,7 @@ int main(int argc, char *argv[])
     char sentMessage[INET6_ADDRSTRLEN]; // Used to send messages to Server
     struct sockaddr_storage clientIP_address; // Used to store Client(s) addresses
     socklen_t sin_size; // ?????
+    int child = -1;
 
     memset(&serverInfo, 0, sizeof(serverInfo)); // Emtpies garbage from structure
 
@@ -95,16 +96,57 @@ int main(int argc, char *argv[])
     }
 
     inet_ntop(clientIP_address.ss_family,get_in_addr((struct sockaddr *)&clientIP_address), buffer, sizeof(buffer));
-	printf("server: got connection from %s\n", buffer);
+	printf("Server: got connection from %s\n", buffer);
 
-    strcpy(sentMessage, "What's up");
-    // send(socket of Server, message to send, maximum size of storage, flag)
-    sentBytes = send(clientSocket, sentMessage, MAXBYTES, 0); // Send message to Client
-    if (error == -1)
+    // Creates a child process
+    child = fork();
+    if (child == 0) // Child process
     {
-        printf("Error on the send() function\n");
+        
+        while(1)
+        {
+            memset(buffer, '\0', sizeof(buffer));
+            memset(sentMessage, '\0', sizeof(sentMessage));
+            printf("Enter your message: ");
+            fgets(buffer, MAXBYTES, stdin);
+            sscanf(buffer, "%s", sentMessage);
+            // send(socket of Server, message to send, maximum size of storage, flag)
+            sentBytes = send(clientSocket, sentMessage, MAXBYTES - 1, 0); // Send message to Client
+            if (sentBytes < 0)
+            {
+                printf("Error on the send() function\n");
+                close(serverSocket);
+                exit(1);
+            }
+            error = recv(clientSocket, buffer, MAXBYTES - 1, 0);
+            if (error == -1)
+            {
+                printf("Error on recv() function\n");
+                close(serverSocket);
+                close(clientSocket);
+                exit(1);
+            }
+            else if (error == 0)
+            {
+                printf("Error, Client has closed connection");
+                close(serverSocket);
+                close(clientSocket);
+                exit(1);
+            }
+            else
+            {
+                printf("Client sent: %s\n", buffer);
+            }
+        }
         close(serverSocket);
-        exit(1);
+    }
+    else if (child > 0) // Parent process
+    {
+        close(clientSocket);
+    }
+    else // Child could not be created due to memory
+    {
+        printf("Child process could not be created\n");
     }
     
     close(serverSocket);
