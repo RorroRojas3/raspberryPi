@@ -10,9 +10,18 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
-#define PORTNUMBER "50505"
+#define PORTNUMBER "50516"
 #define MAXBYTES 256
 #define IPADDRESS 130
+
+void *get_in_addr(struct sockaddr *sa)
+{
+	if (sa->sa_family == AF_INET) {
+		return &(((struct sockaddr_in*)sa)->sin_addr);
+	}
+
+	return &(((struct sockaddr_in6*)sa)->sin6_addr);
+}
 
 int main(int argc, char *argv[])
 {
@@ -23,7 +32,11 @@ int main(int argc, char *argv[])
 	struct addrinfo clientInfo; // Will store the Host information
 	struct addrinfo *pClientInfo;	// Will point to Host information
 	int error = -1;	// Used as a error checking variable
+	//int successSocket = -1;
+	//int successConnection = -1;
 	//char sentMessage[INET6_ADDRSTRLEN];	// Used to send messages to Server
+	
+	char s[256];
 	
 	if (argc != 2)
 	{
@@ -40,7 +53,7 @@ int main(int argc, char *argv[])
 
 	clientInfo.ai_family = AF_UNSPEC; // IP can be either IPv4 or IPv6
 	clientInfo.ai_socktype = SOCK_STREAM; // TCP connection
-	clientInfo.ai_flags = AI_PASSIVE; // Assigns Host IP address to socket structures
+	//clientInfo.ai_flags = AI_PASSIVE; // Assigns Host IP address to socket structures
 
 	error = getaddrinfo(NULL, PORTNUMBER, &clientInfo, &pClientInfo); // pClientInfo points to clientInfo
 	if (error != 0)
@@ -49,37 +62,46 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 	
-	clientSocket = socket(pClientInfo->ai_family, pClientInfo->ai_socktype, pClientInfo->ai_protocol);
-	if (clientSocket == -1)
+	while (pClientInfo != NULL)
 	{
-		printf("Error, socket failed\n");
-		free(pClientInfo);
-		exit(1);
+		clientSocket = socket(pClientInfo->ai_family, pClientInfo->ai_socktype, pClientInfo->ai_protocol);
+		
+		// connect(socket of the client, destination port and Host IP address, length in bytes of Server Address structure)
+		error = connect(clientSocket, pClientInfo->ai_addr, pClientInfo->ai_addrlen); // Connects to Server
+		
+		if (clientSocket != -1 && error != -1)
+		{
+			break;
+		}
+		else
+		{
+			pClientInfo = pClientInfo->ai_next;
+		}
 	}
-	
-	// connect(socket of the client, destination port and Host IP address, length in bytes of Server Address structure)
-	error = connect(clientSocket, pClientInfo->ai_addr, pClientInfo->ai_addrlen); // Connects to Server
-	if (error == -1)
+
+	if (pClientInfo == NULL)
 	{
-		printf("Error, connection between Client and Server failed\n");
-		free(pClientInfo);
+		printf("Failed to connect to Server\n");
 		close(clientSocket);
 		exit(1);
 	}
 
-	// recv(socket of client, message storage, maximum size of storage, flat);
-	error = recv(clientSocket, buffer, MAXBYTES, 0); // Receives message from Server 
+	inet_ntop(pClientInfo->ai_family, get_in_addr((struct sockaddr *)pClientInfo->ai_addr), s, sizeof(s));
+	printf("client: connecting to %s\n", s);
+	
+	freeaddrinfo(pClientInfo);
+
+	// recv(socket of client, message storage, maximum size of storage, flag);
+	error = recv(clientSocket, buffer, MAXBYTES - 1, 0); // Receives message from Server 
 	if (error == -1)
 	{
 		printf("Error on recv() function\n");
-		free(pClientInfo);
 		close(clientSocket);
 		exit(1);
 	}
 	else if (error == 0)
 	{
 		printf("Error, Server has closed connection\n");
-		free(pClientInfo);
 		close(clientSocket);
 		exit(1);
 	}
@@ -89,8 +111,7 @@ int main(int argc, char *argv[])
 		printf("Server sent: '%s'\n", buffer);
 	}
 
-
-	free(pClientInfo); // Frees the Linked List
+		
 	close(clientSocket);
 	return 0;
 }
