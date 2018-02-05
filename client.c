@@ -10,7 +10,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
-#define PORTNUMBER "50516"
+#define PORTNUMBER "50505"
 #define MAXBYTES 256
 #define IPADDRESS 130
 
@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
 	clientInfo.ai_socktype = SOCK_STREAM; // TCP connection
 	//clientInfo.ai_flags = AI_PASSIVE; // Assigns Host IP address to socket structures
 
-	error = getaddrinfo(NULL, PORTNUMBER, &clientInfo, &pClientInfo); // pClientInfo points to clientInfo
+	error = getaddrinfo(serverIP_address, PORTNUMBER, &clientInfo, &pClientInfo); // pClientInfo points to clientInfo
 	if (error != 0)
 	{
 		printf("Error from function getaddrinfo() %s\n", gai_strerror(error));
@@ -111,11 +111,12 @@ int main(int argc, char *argv[])
 		}
 		else
 		{
+			buffer[error] = '\0';
 			printf("Server sent: '%s'\n", buffer);
 			printf("Enter your message: ");
 			fgets(buffer, MAXBYTES, stdin);
 			sscanf(buffer, "%s", sentMessage);
-			sentBytes = send(clientSocket, sentMessage, MAXBYTES - 1, 0);		
+			sentBytes = send(clientSocket, sentMessage, strlen(sentMessage), 0);		
 			if (sentBytes < 0)
 			{
 				printf("Error on the send() function");

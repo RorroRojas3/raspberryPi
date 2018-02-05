@@ -9,8 +9,9 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <sys/wait.h>
 
-#define PORTNUMBER "50516"
+#define PORTNUMBER "50505"
 #define MAXBYTES 256
 #define IPADDRESS 130
 #define MAXCLIENTS 5
@@ -38,6 +39,7 @@ int main(int argc, char *argv[])
     struct sockaddr_storage clientIP_address; // Used to store Client(s) addresses
     socklen_t sin_size; // ?????
     int child = -1;
+    int status = -1;
 
     memset(&serverInfo, 0, sizeof(serverInfo)); // Emtpies garbage from structure
 
@@ -102,7 +104,6 @@ int main(int argc, char *argv[])
     child = fork();
     if (child == 0) // Child process
     {
-        
         while(1)
         {
             memset(buffer, '\0', sizeof(buffer));
@@ -111,7 +112,7 @@ int main(int argc, char *argv[])
             fgets(buffer, MAXBYTES, stdin);
             sscanf(buffer, "%s", sentMessage);
             // send(socket of Server, message to send, maximum size of storage, flag)
-            sentBytes = send(clientSocket, sentMessage, MAXBYTES - 1, 0); // Send message to Client
+            sentBytes = send(clientSocket, sentMessage, strlen(sentMessage), 0); // Send message to Client
             if (sentBytes < 0)
             {
                 printf("Error on the send() function\n");
@@ -135,6 +136,7 @@ int main(int argc, char *argv[])
             }
             else
             {
+                buffer[error] = '\0';
                 printf("Client sent: %s\n", buffer);
             }
         }
@@ -142,6 +144,7 @@ int main(int argc, char *argv[])
     }
     else if (child > 0) // Parent process
     {
+        wait(&status);
         close(clientSocket);
     }
     else // Child could not be created due to memory
