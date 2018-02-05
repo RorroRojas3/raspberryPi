@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
     struct addrinfo serverInfo; // Will store the Server's information
     struct addrinfo *pServerInfo;   // Will point to Server Information
     int error = -2; // Used as a error checking variable
-    char sentMessage[INET6_ADDRSTRLEN]; // Used to send messages to Server
+    char sentMessage[MAXBYTES]; // Used to send messages to Server
     struct sockaddr_storage clientIP_address; // Used to store Client(s) addresses
     socklen_t sin_size; // ?????
     int child = -1;
