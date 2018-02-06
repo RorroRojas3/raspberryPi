@@ -143,6 +143,7 @@ int main(int argc, char *argv[])
 				stringFree(sentMessage);
 				exit(1);
 			}
+			stringFree(sentMessage);
 		}
 	}
 
