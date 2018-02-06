@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
             }
             else if (error == 0)
             {
-                printf("Error, Client has closed connection");
+                printf("Error, Client has closed connection\n");
                 close(serverSocket);
                 close(clientSocket);
                 stringFree(sentMessage);
