@@ -23,6 +23,24 @@ void *get_in_addr(struct sockaddr *sa)
 	return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
+char *stringAlloc(char *string, int lengthOfString)
+{
+    int c1;
+    char *result;
+    result = (char *)calloc(lengthOfString, sizeof(char));
+    for (c1 = 0; (string[c1] != '\0') && (string[c1] != '\n') && (c1 < lengthOfString); c1++)
+    {
+        result[c1] = string[c1];
+    }
+    result[c1] = '\0';
+    return result;
+}
+
+void stringFree(char *string)
+{
+    free(string);
+}
+
 int main(int argc, char *argv[])
 {
 	int clientSocket; // Used to store the socket()
@@ -34,7 +52,7 @@ int main(int argc, char *argv[])
 	int error = -1;	// Used as a error checking variable
 	//int successSocket = -1;
 	//int successConnection = -1;
-	char sentMessage[MAXBYTES];	// Used to send messages to Server
+	char *sentMessage;	// Used to send messages to Server
 	int sentBytes;
 	
 	char s[256];
@@ -112,15 +130,17 @@ int main(int argc, char *argv[])
 		else
 		{
 			buffer[error] = '\0';
-			printf("Server sent: '%s'\n", buffer);
+			printf("Server sent: %s\n", buffer);
+			memset(buffer, '\0', sizeof(buffer));
 			printf("Enter your message: ");
 			fgets(buffer, MAXBYTES, stdin);
-			sscanf(buffer, "%s", sentMessage);
+			sentMessage = stringAlloc(buffer, strlen(buffer));
 			sentBytes = send(clientSocket, sentMessage, strlen(sentMessage), 0);		
 			if (sentBytes < 0)
 			{
 				printf("Error on the send() function");
 				close(clientSocket);
+				stringFree(sentMessage);
 				exit(1);
 			}
 		}

@@ -26,6 +26,24 @@ void *get_in_addr(struct sockaddr *sa)
 	return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
+char *stringAlloc(char *string, int lengthOfString)
+{
+    int c1;
+    char *result;
+    result = (char *)calloc(lengthOfString, sizeof(char));
+    for (c1 = 0; (string[c1] != '\0') && (string[c1] != '\n') && (c1 < lengthOfString); c1++)
+    {
+        result[c1] = string[c1];
+    }
+    result[c1] = '\0';
+    return result;
+}
+
+void stringFree(char *string)
+{
+    free(string);
+}
+
 int main(int argc, char *argv[])
 {
     int serverSocket; // Used to store the socket()
@@ -35,7 +53,7 @@ int main(int argc, char *argv[])
     struct addrinfo serverInfo; // Will store the Server's information
     struct addrinfo *pServerInfo;   // Will point to Server Information
     int error = -2; // Used as a error checking variable
-    char sentMessage[MAXBYTES]; // Used to send messages to Server
+    char *sentMessage; // Used to send messages to Server
     struct sockaddr_storage clientIP_address; // Used to store Client(s) addresses
     socklen_t sin_size; // ?????
     int child = -1;
@@ -107,16 +125,16 @@ int main(int argc, char *argv[])
         while(1)
         {
             memset(buffer, '\0', sizeof(buffer));
-            memset(sentMessage, '\0', sizeof(sentMessage));
             printf("Enter your message: ");
             fgets(buffer, MAXBYTES, stdin);
-            sscanf(buffer, "%s", sentMessage);
+            sentMessage = stringAlloc(buffer, strlen(buffer));
             // send(socket of Server, message to send, maximum size of storage, flag)
             sentBytes = send(clientSocket, sentMessage, strlen(sentMessage), 0); // Send message to Client
             if (sentBytes < 0)
             {
                 printf("Error on the send() function\n");
                 close(serverSocket);
+                stringFree(sentMessage);
                 exit(1);
             }
             error = recv(clientSocket, buffer, MAXBYTES - 1, 0);
@@ -125,6 +143,7 @@ int main(int argc, char *argv[])
                 printf("Error on recv() function\n");
                 close(serverSocket);
                 close(clientSocket);
+                stringFree(sentMessage);
                 exit(1);
             }
             else if (error == 0)
@@ -132,12 +151,14 @@ int main(int argc, char *argv[])
                 printf("Error, Client has closed connection");
                 close(serverSocket);
                 close(clientSocket);
+                stringFree(sentMessage);
                 exit(1);
             }
             else
             {
                 buffer[error] = '\0';
                 printf("Client sent: %s\n", buffer);
+                stringFree(sentMessage);
             }
         }
         close(serverSocket);
