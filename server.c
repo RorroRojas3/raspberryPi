@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
                 stringFree(sentMessage);
                 exit(1);
             }
-            error = recv(clientSocket, buffer, MAXBYTES - 1, 0);
+            error = recv(clientSocket, buffer, MAXBYTES - 2, 0);
             if (error == -1)
             {
                 printf("Error on recv() function\n");

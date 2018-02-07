@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
 	
 	while(1)
 	{
-		error = recv(clientSocket, buffer, MAXBYTES - 1, 0); // Receives message from Server 
+		error = recv(clientSocket, buffer, MAXBYTES - 2, 0); // Receives message from Server 
 		if (error == -1)
 		{
 			printf("Error on recv() function\n");
